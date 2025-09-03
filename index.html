@@ -1,1 +1,776 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Веб-радар с функциями подключения</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #4ecca3;
+        }
+        
+        .build-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #4ecca3, #2c9680);
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .build-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .status {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 15px 0;
+        }
+        
+        .status-indicator {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .connected {
+            background-color: #4ecca3;
+        }
+        
+        .disconnected {
+            background-color: #f95959;
+        }
+        
+        .main-content {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .radar-container {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+        
+        .radar {
+            width: 100%;
+            height: 300px;
+            background: #0f3460;
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            margin: 0 auto;
+            border: 2px solid #4ecca3;
+        }
+        
+        .radar-sweep {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            clip-path: polygon(50% 50%, 0 0, 0 50%);
+            background: linear-gradient(90deg, rgba(78, 204, 163, 0.2), rgba(78, 204, 163, 0.4));
+            animation: rotate 4s infinite linear;
+            transform-origin: center;
+        }
+        
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        .user-dot {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #f95959;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .controls {
+            flex: 1;
+            min-width: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .control-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #4ecca3;
+        }
+        
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        
+        .btn {
+            padding: 12px 15px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #4ecca3, #2c9680);
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #f95959, #d33f3f);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #ff9a3c, #ff7b00);
+        }
+        
+        .output {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            height: 150px;
+            overflow-y: auto;
+        }
+        
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 8px;
+            border-left: 3px solid #4ecca3;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .connection-panel {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        input {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+        
+        .user-list {
+            margin-top: 20px;
+        }
+        
+        .user-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: #4ecca3;
+            border-radius: 50%;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        /* Build Window Styles */
+        .build-window {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            max-width: 600px;
+            background: rgba(26, 26, 46, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            border: 2px solid #4ecca3;
+        }
+        
+        .build-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            color: #f95959;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        .build-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .option-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .option-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-3px);
+        }
+        
+        .option-card h3 {
+            color: #4ecca3;
+            margin-bottom: 10px;
+        }
+        
+        .build-btn-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 999;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .build-window {
+                width: 95%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div>
+                <h1>Веб-радар подключения</h1>
+                <div class="status">
+                    <div class="status-indicator disconnected" id="status-indicator"></div>
+                    <span id="status-text">Не подключено</span>
+                </div>
+            </div>
+            <button class="build-btn" id="build-btn">
+                <i class="fas fa-cogs"></i> Сборка
+            </button>
+        </header>
+        
+        <div class="main-content">
+            <div class="radar-container">
+                <h2>Радар активных подключений</h2>
+                <div class="radar" id="radar">
+                    <div class="radar-sweep"></div>
+                    <!-- User dots will be added here dynamically -->
+                </div>
+                
+                <div class="user-list" id="user-list">
+                    <h2>Обнаруженные пользователи</h2>
+                    <!-- User list will be added here dynamically -->
+                </div>
+            </div>
+            
+            <div class="controls">
+                <div class="control-panel">
+                    <h2>Функции управления</h2>
+                    <div class="button-grid">
+                        <button class="btn" id="connect-btn">Подключиться</button>
+                        <button class="btn btn-danger" id="disconnect-btn">Отключиться</button>
+                        <button class="btn" id="mic-btn">Микрофон</button>
+                        <button class="btn" id="desktop-btn">Десктоп</button>
+                        <button class="btn" id="files-btn">Файловый менеджер</button>
+                        <button class="btn" id="upload-btn">Загрузить файл</button>
+                        <button class="btn btn-warning" id="scan-btn">Сканировать</button>
+                    </div>
+                    
+                    <div class="connection-panel">
+                        <input type="text" id="user-id" placeholder="ID пользователя для подключения">
+                        <button class="btn" id="connect-user-btn">Коннект</button>
+                    </div>
+                </div>
+                
+                <div class="control-panel">
+                    <h2>Журнал событий</h2>
+                    <div class="output" id="log-output">
+                        <div class="log-entry">Система инициализирована. Готов к подключениям.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Build Window -->
+    <div class="overlay" id="overlay"></div>
+    <div class="build-window" id="build-window">
+        <div class="build-header">
+            <h2>Окно сборки системы</h2>
+            <button class="close-btn" id="close-build-window">&times;</button>
+        </div>
+        
+        <div class="build-options">
+            <div class="option-card" data-option="stiller">
+                <h3>Стиллер</h3>
+                <p>Сборка модуля для скрытого сбора данных</p>
+            </div>
+            
+            <div class="option-card" data-option="microphone">
+                <h3>Модуль микрофона</h3>
+                <p>Сборка модуля для прослушивания микрофона</p>
+            </div>
+            
+            <div class="option-card" data-option="desktop">
+                <h3>Модуль доступа к рабочему столу</h3>
+                <p>Сборка модуля для удаленного доступа к рабочему столу</p>
+            </div>
+            
+            <div class="option-card" data-option="files">
+                <h3>Файловый менеджер</h3>
+                <p>Сборка модуля для управления файловой системой</p>
+            </div>
+        </div>
+        
+        <div class="build-progress">
+            <h3>Прогресс сборки:</h3>
+            <div class="output" id="build-output">
+                <div class="log-entry">Выберите модули для сборки</div>
+            </div>
+        </div>
+        
+        <div class="build-btn-container">
+            <button class="btn btn-warning" id="start-build-btn">Начать сборку</button>
+        </div>
+    </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elements
+            const statusIndicator = document.getElementById('status-indicator');
+            const statusText = document.getElementById('status-text');
+            const radar = document.getElementById('radar');
+            const userList = document.getElementById('user-list');
+            const logOutput = document.getElementById('log-output');
+            const connectBtn = document.getElementById('connect-btn');
+            const disconnectBtn = document.getElementById('disconnect-btn');
+            const micBtn = document.getElementById('mic-btn');
+            const desktopBtn = document.getElementById('desktop-btn');
+            const filesBtn = document.getElementById('files-btn');
+            const uploadBtn = document.getElementById('upload-btn');
+            const scanBtn = document.getElementById('scan-btn');
+            const connectUserBtn = document.getElementById('connect-user-btn');
+            const userIdInput = document.getElementById('user-id');
+            const buildBtn = document.getElementById('build-btn');
+            const buildWindow = document.getElementById('build-window');
+            const overlay = document.getElementById('overlay');
+            const closeBuildWindow = document.getElementById('close-build-window');
+            const startBuildBtn = document.getElementById('start-build-btn');
+            const buildOutput = document.getElementById('build-output');
+            const optionCards = document.querySelectorAll('.option-card');
+            
+            let isConnected = false;
+            let users = [];
+            let selectedOptions = new Set();
+            
+            // Add log entry
+            function addLogEntry(message) {
+                const entry = document.createElement('div');
+                entry.className = 'log-entry';
+                entry.textContent = new Date().toLocaleTimeString() + ' - ' + message;
+                logOutput.appendChild(entry);
+                logOutput.scrollTop = logOutput.scrollHeight;
+            }
+            
+            // Add build log entry
+            function addBuildLogEntry(message) {
+                const entry = document.createElement('div');
+                entry.className = 'log-entry';
+                entry.textContent = new Date().toLocaleTimeString() + ' - ' + message;
+                buildOutput.appendChild(entry);
+                buildOutput.scrollTop = buildOutput.scrollHeight;
+            }
+            
+            // Update status
+            function updateStatus(connected) {
+                isConnected = connected;
+                statusIndicator.className = connected ? 
+                    'status-indicator connected' : 'status-indicator disconnected';
+                statusText.textContent = connected ? 
+                    'Подключено к сети' : 'Не подключено';
+            }
+            
+            // Generate random users for demo
+            function generateRandomUsers(count) {
+                users = [];
+                const names = ['Алексей', 'Мария', 'Иван', 'Ольга', 'Дмитрий', 'Екатерина', 'Сергей', 'Анна'];
+                const sectors = 8;
+                
+                for (let i = 0; i < count; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const distance = 30 + Math.random() * 60; // % of radar radius
+                    
+                    users.push({
+                        id: 'user' + (i + 1),
+                        name: names[Math.floor(Math.random() * names.length)],
+                        x: 50 + Math.cos(angle) * distance + '%',
+                        y: 50 + Math.sin(angle) * distance + '%'
+                    });
+                }
+                
+                renderUsers();
+            }
+            
+            // Render users on radar and in list
+            function renderUsers() {
+                // Clear previous users
+                const existingDots = document.querySelectorAll('.user-dot');
+                existingDots.forEach(dot => dot.remove());
+                
+                const existingUserItems = document.querySelectorAll('.user-item');
+                existingUserItems.forEach(item => item.remove());
+                
+                // Add user dots to radar
+                users.forEach(user => {
+                    const dot = document.createElement('div');
+                    dot.className = 'user-dot';
+                    dot.style.left = user.x;
+                    dot.style.top = user.y;
+                    dot.title = user.name;
+                    radar.appendChild(dot);
+                });
+                
+                // Add users to list
+                users.forEach(user => {
+                    const userItem = document.createElement('div');
+                    userItem.className = 'user-item';
+                    
+                    const avatar = document.createElement('div');
+                    avatar.className = 'user-avatar';
+                    avatar.textContent = user.name.charAt(0);
+                    
+                    const userInfo = document.createElement('div');
+                    userInfo.innerHTML = `<strong>${user.name}</strong><br><small>ID: ${user.id}</small>`;
+                    
+                    userItem.appendChild(avatar);
+                    userItem.appendChild(userInfo);
+                    
+                    userList.appendChild(userItem);
+                });
+            }
+            
+            // Connect function
+            function connect() {
+                updateStatus(true);
+                addLogEntry('Подключение к сети...');
+                
+                // Simulate connection process
+                setTimeout(() => {
+                    generateRandomUsers(5);
+                    addLogEntry('Подключение установлено. Обнаружено 5 пользователей.');
+                }, 1500);
+            }
+            
+            // Disconnect function
+            function disconnect() {
+                updateStatus(false);
+                addLogEntry('Отключение от сети...');
+                
+                // Clear users
+                users = [];
+                renderUsers();
+                
+                setTimeout(() => {
+                    addLogEntry('Отключено от сети.');
+                }, 1000);
+            }
+            
+            // Request microphone access
+            function requestMicrophone() {
+                addLogEntry('Запрос доступа к микрофону...');
+                
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    addLogEntry('Ваш браузер не поддерживает доступ к медиаустройствам');
+                    return;
+                }
+                
+                navigator.mediaDevices.getUserMedia({ audio: true })
+                    .then(function(stream) {
+                        addLogEntry('Доступ к микрофону получен');
+                    })
+                    .catch(function(err) {
+                        addLogEntry('Ошибка доступа к микрофону: ' + err.message);
+                    });
+            }
+            
+            // Request desktop capture (Chrome/Edge only)
+            function requestDesktop() {
+                addLogEntry('Запрос доступа к рабочему столу...');
+                
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+                    addLogEntry('Ваш браузер не поддерживает захват рабочего стола');
+                    return;
+                }
+                
+                navigator.mediaDevices.getDisplayMedia({ video: true })
+                    .then(function(stream) {
+                        addLogEntry('Доступ к рабочему столу получен');
+                    })
+                    .catch(function(err) {
+                        addLogEntry('Ошибка доступа к рабочему столу: ' + err.message);
+                    });
+            }
+            
+            // Request file system access
+            function requestFileSystem() {
+                addLogEntry('Открытие файлового менеджера...');
+                
+                if ('showDirectoryPicker' in window) {
+                    window.showDirectoryPicker()
+                        .then(function(dirHandle) {
+                            addLogEntry('Доступ к файловой системе получен: ' + dirHandle.name);
+                        })
+                        .catch(function(err) {
+                            addLogEntry('Ошибка доступа к файловой системе: ' + err.message);
+                        });
+                } else {
+                    addLogEntry('Ваш браузер не поддерживает File System Access API');
+                }
+            }
+            
+            // File upload
+            function uploadFile() {
+                addLogEntry('Открытие диалога выбора файла...');
+                
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.style.display = 'none';
+                
+                input.onchange = function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        addLogEntry('Выбран файл: ' + file.name + ' (' + (file.size / 1024).toFixed(2) + ' KB)');
+                    }
+                    document.body.removeChild(input);
+                };
+                
+                document.body.appendChild(input);
+                input.click();
+            }
+            
+            // Connect to specific user
+            function connectToUser() {
+                const userId = userIdInput.value.trim();
+                if (!userId) {
+                    addLogEntry('Введите ID пользователя для подключения');
+                    return;
+                }
+                
+                addLogEntry(`Попытка подключения к пользователю ${userId}...`);
+                
+                // Simulate connection process
+                setTimeout(() => {
+                    addLogEntry(`Успешно подключено к пользователю ${userId}`);
+                }, 2000);
+            }
+            
+            // Build window functions
+            function openBuildWindow() {
+                buildWindow.style.display = 'block';
+                overlay.style.display = 'block';
+            }
+            
+            function closeBuildWindowFunc() {
+                buildWindow.style.display = 'none';
+                overlay.style.display = 'none';
+                selectedOptions.clear();
+                optionCards.forEach(card => card.style.background = 'rgba(255, 255, 255, 0.05)');
+                buildOutput.innerHTML = '<div class="log-entry">Выберите модули для сборки</div>';
+            }
+            
+            function toggleOptionSelection(card) {
+                const option = card.getAttribute('data-option');
+                
+                if (selectedOptions.has(option)) {
+                    selectedOptions.delete(option);
+                    card.style.background = 'rgba(255, 255, 255, 0.05)';
+                } else {
+                    selectedOptions.add(option);
+                    card.style.background = 'rgba(78, 204, 163, 0.2)';
+                }
+            }
+            
+            function startBuild() {
+                if (selectedOptions.size === 0) {
+                    addBuildLogEntry('Ошибка: Не выбрано ни одного модуля для сборки');
+                    return;
+                }
+                
+                addBuildLogEntry('Начало процесса сборки...');
+                
+                // Simulate build process
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += 10;
+                    addBuildLogEntry(`Сборка выполняется: ${progress}%`);
+                    
+                    if (progress === 50) {
+                        addBuildLogEntry('Компиляция модулей...');
+                    }
+                    
+                    if (progress === 80) {
+                        addBuildLogEntry('Оптимизация кода...');
+                    }
+                    
+                    if (progress >= 100) {
+                        clearInterval(interval);
+                        addBuildLogEntry('Сборка завершена успешно!');
+                        
+                        // Show success message
+                        setTimeout(() => {
+                            addBuildLogEntry('Система готова к использованию');
+                            startBuildBtn.textContent = 'Сборка завершена';
+                            startBuildBtn.disabled = true;
+                        }, 1000);
+                    }
+                }, 500);
+            }
+            
+            // Event listeners
+            connectBtn.addEventListener('click', connect);
+            disconnectBtn.addEventListener('click', disconnect);
+            micBtn.addEventListener('click', requestMicrophone);
+            desktopBtn.addEventListener('click', requestDesktop);
+            filesBtn.addEventListener('click', requestFileSystem);
+            uploadBtn.addEventListener('click', uploadFile);
+            connectUserBtn.addEventListener('click', connectToUser);
+            
+            scanBtn.addEventListener('click', function() {
+                addLogEntry('Сканирование сети...');
+                
+                // Simulate scanning
+                setTimeout(() => {
+                    const newUsers = 3 + Math.floor(Math.random() * 3);
+                    generateRandomUsers(newUsers);
+                    addLogEntry(`Сканирование завершено. Обнаружено ${newUsers} пользователей.`);
+                }, 2000);
+            });
+            
+            // Build window event listeners
+            buildBtn.addEventListener('click', openBuildWindow);
+            closeBuildWindow.addEventListener('click', closeBuildWindowFunc);
+            overlay.addEventListener('click', closeBuildWindowFunc);
+            
+            optionCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    toggleOptionSelection(this);
+                });
+            });
+            
+            startBuildBtn.addEventListener('click', startBuild);
+            
+            // Initialize
+            addLogEntry('Инициализация веб-радара...');
+            generateRandomUsers(0);
+        });
+    </script>
+    
+    <!-- Font Awesome for icons -->
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</body>
+</html>
