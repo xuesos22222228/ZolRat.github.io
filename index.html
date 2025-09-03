@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Веб-интерфейс подключения</title>
+    <title>Remote Access Tool</title>
     <style>
         * {
             margin: 0;
@@ -13,19 +13,15 @@
         }
         
         body {
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
-            color: #fff;
+            background: linear-gradient(135deg, #0d1b2a, #1b263b);
+            color: #e0e1dd;
             min-height: 100vh;
             padding: 20px;
         }
         
         .container {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 0 auto;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
         }
         
         header {
@@ -34,12 +30,13 @@
             padding: 20px;
             background: rgba(255, 255, 255, 0.05);
             border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
         }
         
         h1 {
-            font-size: 2.2rem;
+            font-size: 2.5rem;
             margin-bottom: 10px;
-            color: #4ecca3;
+            color: #778da9;
         }
         
         .status {
@@ -57,17 +54,35 @@
         }
         
         .connected {
-            background-color: #4ecca3;
+            background-color: #4caf50;
         }
         
         .disconnected {
-            background-color: #f95959;
+            background-color: #f44336;
+        }
+        
+        .connecting {
+            background-color: #ff9800;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
         }
         
         .main-content {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 300px 1fr;
             gap: 20px;
+        }
+        
+        .sidebar {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
         }
         
         .panel {
@@ -75,32 +90,31 @@
             border-radius: 15px;
             padding: 20px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
         }
         
         h2 {
             font-size: 1.5rem;
             margin-bottom: 15px;
-            color: #4ecca3;
+            color: #778da9;
         }
         
         .button-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 15px;
+            gap: 10px;
         }
         
         .btn {
             padding: 12px 15px;
             border: none;
             border-radius: 8px;
-            background: linear-gradient(135deg, #4ecca3, #2c9680);
+            background: linear-gradient(135deg, #415a77, #778da9);
             color: #fff;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
-            justify-content: center;
             gap: 8px;
         }
         
@@ -114,11 +128,85 @@
         }
         
         .btn-danger {
-            background: linear-gradient(135deg, #f95959, #d33f3f);
+            background: linear-gradient(135deg, #f44336, #d32f2f);
         }
         
         .btn-warning {
-            background: linear-gradient(135deg, #ff9a3c, #ff7b00);
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #4caf50, #388e3c);
+        }
+        
+        .connection-panel {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        input, select {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+        
+        .desktop-view {
+            background: #000;
+            border-radius: 10px;
+            height: 400px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        .desktop-screen {
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMwMDAwMDAiPjwvcmVjdD48dGV4dCB4PSI0MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI0IiBmaWxsPSIjNDE1QTc3Ij5SZW1vdGUgRGVza3RvcCBTY3JlZW48L3RleHQ+PC9zdmc+') no-repeat center;
+            background-size: cover;
+        }
+        
+        .desktop-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .files-view {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            height: 200px;
+            overflow-y: auto;
+        }
+        
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            margin-bottom: 5px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .file-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .file-icon {
+            margin-right: 10px;
+            width: 24px;
+            height: 24px;
+            background: #415a77;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .output {
@@ -135,42 +223,62 @@
         .log-entry {
             margin-bottom: 8px;
             padding: 8px;
-            border-left: 3px solid #4ecca3;
+            border-left: 3px solid #778da9;
             background: rgba(255, 255, 255, 0.05);
         }
         
-        .connection-panel {
+        .tab-container {
             display: flex;
-            gap: 10px;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .tab {
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px 5px 0 0;
+            cursor: pointer;
+        }
+        
+        .tab.active {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .device-list {
             margin-top: 15px;
         }
         
-        input {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
-        }
-        
-        .config-data {
-            margin-top: 20px;
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-            font-family: monospace;
-            font-size: 14px;
-            line-height: 1.6;
-        }
-        
-        .config-line {
-            margin-bottom: 8px;
+        .device-item {
             display: flex;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            cursor: pointer;
         }
         
-        .config-checkbox {
-            margin-right: 10px;
+        .device-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .device-icon {
+            width: 40px;
+            height: 40px;
+            background: #415a77;
+            border-radius: 50%;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         @media (max-width: 768px) {
@@ -183,7 +291,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>Веб-интерфейс подключения</h1>
+            <h1>Remote Access Tool</h1>
             <div class="status">
                 <div class="status-indicator disconnected" id="status-indicator"></div>
                 <span id="status-text">Не подключено</span>
@@ -191,65 +299,179 @@
         </header>
         
         <div class="main-content">
-            <div class="panel">
-                <h2>Функции управления</h2>
-                <div class="button-grid">
-                    <button class="btn" id="connect-btn">Подключиться</button>
-                    <button class="btn btn-danger" id="disconnect-btn">Отключиться</button>
-                    <button class="btn" id="mic-btn">Микрофон</button>
-                    <button class="btn" id="desktop-btn">Десктоп</button>
-                    <button class="btn" id="files-btn">Файловый менеджер</button>
-                    <button class="btn" id="upload-btn">Загрузить файл</button>
-                    <button class="btn btn-warning" id="scan-btn">Сканировать</button>
+            <div class="sidebar">
+                <div class="panel">
+                    <h2>Подключение</h2>
+                    <div class="connection-panel">
+                        <input type="text" id="remote-ip" placeholder="IP адрес или ID">
+                        <button class="btn btn-success" id="connect-btn">Подключиться</button>
+                    </div>
+                    
+                    <div class="connection-panel">
+                        <select id="connection-type">
+                            <option value="rdp">RDP</option>
+                            <option value="vnc">VNC</option>
+                            <option value="ssh">SSH</option>
+                            <option value="custom">Custom</option>
+                        </select>
+                    </div>
+                    
+                    <div class="device-list" id="device-list">
+                        <h3>История подключений</h3>
+                        <div class="device-item">
+                            <div class="device-icon">PC</div>
+                            <div>192.168.1.105 (Windows)</div>
+                        </div>
+                        <div class="device-item">
+                            <div class="device-icon">SRV</div>
+                            <div>server.company.com (Linux)</div>
+                        </div>
+                        <div class="device-item">
+                            <div class="device-icon">NB</div>
+                            <div>macbook-user (macOS)</div>
+                        </div>
+                    </div>
                 </div>
                 
-                <div class="connection-panel">
-                    <input type="text" id="user-id" placeholder="ID пользователя для подключения">
-                    <button class="btn" id="connect-user-btn">Коннект</button>
+                <div class="panel">
+                    <h2>Быстрые действия</h2>
+                    <div class="button-grid">
+                        <button class="btn" id="mic-btn">
+                            <i class="fas fa-microphone"></i> Микрофон
+                        </button>
+                        <button class="btn" id="cam-btn">
+                            <i class="fas fa-video"></i> Камера
+                        </button>
+                        <button class="btn" id="files-btn">
+                            <i class="fas fa-folder"></i> Файлы
+                        </button>
+                        <button class="btn" id="process-btn">
+                            <i class="fas fa-tasks"></i> Процессы
+                        </button>
+                        <button class="btn" id="cmd-btn">
+                            <i class="fas fa-terminal"></i> Командная строка
+                        </button>
+                        <button class="btn btn-warning" id="scan-btn">
+                            <i class="fas fa-radar"></i> Сканировать сеть
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel" style="grid-column: span 1;">
+                <div class="tab-container">
+                    <div class="tab active" data-tab="desktop">Рабочий стол</div>
+                    <div class="tab" data-tab="files">Файловый менеджер</div>
+                    <div class="tab" data-tab="terminal">Терминал</div>
+                    <div class="tab" data-tab="tools">Инструменты</div>
+                </div>
+                
+                <div class="tab-content active" id="desktop-tab">
+                    <div class="desktop-controls">
+                        <button class="btn" id="view-btn">
+                            <i class="fas fa-desktop"></i> Просмотр
+                        </button>
+                        <button class="btn" id="control-btn">
+                            <i class="fas fa-mouse"></i> Управление
+                        </button>
+                        <button class="btn" id="quality-btn">
+                            <i class="fas fa-tachometer-alt"></i> Качество
+                        </button>
+                        <button class="btn btn-danger" id="disconnect-btn">
+                            <i class="fas fa-power-off"></i> Отключиться
+                        </button>
+                    </div>
+                    
+                    <div class="desktop-view">
+                        <div class="desktop-screen"></div>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="files-tab">
+                    <div class="desktop-controls">
+                        <button class="btn" id="upload-btn">
+                            <i class="fas fa-upload"></i> Загрузить
+                        </button>
+                        <button class="btn" id="download-btn">
+                            <i class="fas fa-download"></i> Скачать
+                        </button>
+                        <button class="btn" id="execute-btn">
+                            <i class="fas fa-play"></i> Выполнить
+                        </button>
+                        <button class="btn btn-danger" id="delete-btn">
+                            <i class="fas fa-trash"></i> Удалить
+                        </button>
+                    </div>
+                    
+                    <div class="files-view">
+                        <div class="file-item">
+                            <div class="file-icon"><i class="fas fa-folder"></i></div>
+                            <div>Documents</div>
+                        </div>
+                        <div class="file-item">
+                            <div class="file-icon"><i class="fas fa-folder"></i></div>
+                            <div>Pictures</div>
+                        </div>
+                        <div class="file-item">
+                            <div class="file-icon"><i class="fas fa-file"></i></div>
+                            <div>readme.txt</div>
+                        </div>
+                        <div class="file-item">
+                            <div class="file-icon"><i class="fas fa-file"></i></div>
+                            <div>config.ini</div>
+                        </div>
+                        <div class="file-item">
+                            <div class="file-icon"><i class="fas fa-file"></i></div>
+                            <div>report.pdf</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="terminal-tab">
+                    <div class="desktop-controls">
+                        <button class="btn" id="cmd-btn">
+                            <i class="fas fa-terminal"></i> Командная строка
+                        </button>
+                        <button class="btn" id="powershell-btn">
+                            <i class="fas fa-terminal"></i> PowerShell
+                        </button>
+                        <button class="btn" id="bash-btn">
+                            <i class="fas fa-terminal"></i> Bash
+                        </button>
+                    </div>
+                    
+                    <div class="output">
+                        <div class="log-entry">Microsoft Windows [Version 10.0.19042.1237]</div>
+                        <div class="log-entry">(c) Microsoft Corporation. All rights reserved.</div>
+                        <div class="log-entry">C:\Users\Admin></div>
+                    </div>
+                    
+                    <div class="connection-panel">
+                        <input type="text" id="command-input" placeholder="Введите команду">
+                        <button class="btn" id="send-command-btn">Выполнить</button>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="tools-tab">
+                    <h3>Системные инструменты</h3>
+                    <div class="button-grid">
+                        <button class="btn" id="process-view-btn">
+                            <i class="fas fa-tasks"></i> Диспетчер задач
+                        </button>
+                        <button class="btn" id="registry-btn">
+                            <i class="fas fa-database"></i> Реестр
+                        </button>
+                        <button class="btn" id="services-btn">
+                            <i class="fas fa-cogs"></i> Службы
+                        </button>
+                        <button class="btn" id="eventlog-btn">
+                            <i class="fas fa-clipboard-list"></i> Журнал событий
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="output" id="log-output">
                     <div class="log-entry">Система инициализирована. Готов к подключениям.</div>
-                </div>
-            </div>
-            
-            <div class="panel">
-                <h2>Конфигурация системы</h2>
-                <div class="config-data">
-                    <div class="config-line">
-                        <span class="config-checkbox">[ ]</span>
-                        <span>Copy: // Password:22222222.gif.hub.sh/Zuffi.do.gif.hub.fork/doc.html</span>
-                    </div>
-                    <div class="config-line">
-                        <span class="config-checkbox">[ ]</span>
-                        <span>Email: YouTube</span>
-                    </div>
-                    <div class="config-line">
-                        <span class="config-checkbox">[ ]</span>
-                        <span>Dropfield: WSLJAM</span>
-                    </div>
-                    <div class="config-line">
-                        <span class="config-checkbox">[ ]</span>
-                        <span>Home - Kafka: Notices</span>
-                    </div>
-                    <div class="config-line">
-                        <span class="config-checkbox">[ ]</span>
-                        <span>Diagram: (64) Discord / Login...</span>
-                    </div>
-                    <div class="config-line">
-                        <span class="config-checkbox">[ ]</span>
-                        <span>Represent: Unknown</span>
-                    </div>
-                    <div class="config-line">
-                        <span class="config-checkbox">[ ]</span>
-                        <span>Append reference</span>
-                    </div>
-                </div>
-                
-                <div class="button-grid" style="margin-top: 20px;">
-                    <button class="btn" id="save-config-btn">Сохранить конфиг</button>
-                    <button class="btn" id="load-config-btn">Загрузить конфиг</button>
-                    <button class="btn btn-warning" id="reset-config-btn">Сбросить конфиг</button>
                 </div>
             </div>
         </div>
@@ -263,17 +485,9 @@
             const logOutput = document.getElementById('log-output');
             const connectBtn = document.getElementById('connect-btn');
             const disconnectBtn = document.getElementById('disconnect-btn');
-            const micBtn = document.getElementById('mic-btn');
-            const desktopBtn = document.getElementById('desktop-btn');
-            const filesBtn = document.getElementById('files-btn');
-            const uploadBtn = document.getElementById('upload-btn');
-            const scanBtn = document.getElementById('scan-btn');
-            const connectUserBtn = document.getElementById('connect-user-btn');
-            const userIdInput = document.getElementById('user-id');
-            const saveConfigBtn = document.getElementById('save-config-btn');
-            const loadConfigBtn = document.getElementById('load-config-btn');
-            const resetConfigBtn = document.getElementById('reset-config-btn');
-            const configCheckboxes = document.querySelectorAll('.config-checkbox');
+            const remoteIp = document.getElementById('remote-ip');
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
             
             let isConnected = false;
             
@@ -287,178 +501,81 @@
             }
             
             // Update status
-            function updateStatus(connected) {
-                isConnected = connected;
-                statusIndicator.className = connected ? 
-                    'status-indicator connected' : 'status-indicator disconnected';
-                statusText.textContent = connected ? 
-                    'Подключено к сети' : 'Не подключено';
+            function updateStatus(status) {
+                isConnected = status === 'connected';
+                statusIndicator.className = 'status-indicator ' + status;
+                
+                if (status === 'connected') {
+                    statusText.textContent = 'Подключено';
+                } else if (status === 'connecting') {
+                    statusText.textContent = 'Подключение...';
+                } else {
+                    statusText.textContent = 'Не подключено';
+                }
             }
             
             // Connect function
             function connect() {
-                updateStatus(true);
-                addLogEntry('Подключение к сети...');
+                const ip = remoteIp.value.trim();
+                if (!ip) {
+                    addLogEntry('Ошибка: Введите IP адрес или ID');
+                    return;
+                }
+                
+                updateStatus('connecting');
+                addLogEntry('Подключение к ' + ip + '...');
                 
                 // Simulate connection process
                 setTimeout(() => {
-                    addLogEntry('Подключение установлено.');
-                }, 1500);
+                    updateStatus('connected');
+                    addLogEntry('Подключение установлено к ' + ip);
+                    addLogEntry('Система: Windows 10 Pro (64-bit)');
+                    addLogEntry('Пользователь: Admin');
+                    addLogEntry('Разрешение экрана: 1920x1080');
+                }, 2000);
             }
             
             // Disconnect function
             function disconnect() {
-                updateStatus(false);
-                addLogEntry('Отключение от сети...');
+                updateStatus('disconnected');
+                addLogEntry('Отключение от удаленного устройства...');
                 
                 setTimeout(() => {
-                    addLogEntry('Отключено от сети.');
+                    addLogEntry('Отключено');
                 }, 1000);
             }
             
-            // Request microphone access
-            function requestMicrophone() {
-                addLogEntry('Запрос доступа к микрофону...');
-                
-                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                    addLogEntry('Ваш браузер не поддерживает доступ к медиаустройствам');
-                    return;
-                }
-                
-                navigator.mediaDevices.getUserMedia({ audio: true })
-                    .then(function(stream) {
-                        addLogEntry('Доступ к микрофону получен');
-                    })
-                    .catch(function(err) {
-                        addLogEntry('Ошибка доступа к микрофону: ' + err.message);
-                    });
-            }
-            
-            // Request desktop capture (Chrome/Edge only)
-            function requestDesktop() {
-                addLogEntry('Запрос доступа к рабочему столу...');
-                
-                if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
-                    addLogEntry('Ваш браузер не поддерживает захват рабочего стола');
-                    return;
-                }
-                
-                navigator.mediaDevices.getDisplayMedia({ video: true })
-                    .then(function(stream) {
-                        addLogEntry('Доступ к рабочему столу получен');
-                    })
-                    .catch(function(err) {
-                        addLogEntry('Ошибка доступа к рабочему столу: ' + err.message);
-                    });
-            }
-            
-            // Request file system access
-            function requestFileSystem() {
-                addLogEntry('Открытие файлового менеджера...');
-                
-                if ('showDirectoryPicker' in window) {
-                    window.showDirectoryPicker()
-                        .then(function(dirHandle) {
-                            addLogEntry('Доступ к файловой системе получен: ' + dirHandle.name);
-                        })
-                        .catch(function(err) {
-                            addLogEntry('Ошибка доступа к файловой системе: ' + err.message);
-                        });
-                } else {
-                    addLogEntry('Ваш браузер не поддерживает File System Access API');
-                }
-            }
-            
-            // File upload
-            function uploadFile() {
-                addLogEntry('Открытие диалога выбора файла...');
-                
-                const input = document.createElement('input');
-                input.type = 'file';
-                input.style.display = 'none';
-                
-                input.onchange = function(e) {
-                    const file = e.target.files[0];
-                    if (file) {
-                        addLogEntry('Выбран файл: ' + file.name + ' (' + (file.size / 1024).toFixed(2) + ' KB)');
-                    }
-                    document.body.removeChild(input);
-                };
-                
-                document.body.appendChild(input);
-                input.click();
-            }
-            
-            // Connect to specific user
-            function connectToUser() {
-                const userId = userIdInput.value.trim();
-                if (!userId) {
-                    addLogEntry('Введите ID пользователя для подключения');
-                    return;
-                }
-                
-                addLogEntry(`Попытка подключения к пользователю ${userId}...`);
-                
-                // Simulate connection process
-                setTimeout(() => {
-                    addLogEntry(`Успешно подключено к пользователю ${userId}`);
-                }, 2000);
-            }
-            
-            // Toggle config checkbox
-            function toggleConfigCheckbox(checkbox) {
-                checkbox.textContent = checkbox.textContent === '[ ]' ? '[x]' : '[ ]';
-            }
-            
-            // Save config
-            function saveConfig() {
-                addLogEntry('Конфигурация сохранена');
-            }
-            
-            // Load config
-            function loadConfig() {
-                addLogEntry('Конфигурация загружена');
-            }
-            
-            // Reset config
-            function resetConfig() {
-                configCheckboxes.forEach(checkbox => {
-                    checkbox.textContent = '[ ]';
+            // Tab switching
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // Deactivate all tabs
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(tc => tc.classList.remove('active'));
+                    
+                    // Activate current tab
+                    this.classList.add('active');
+                    document.getElementById(tabId + '-tab').classList.add('active');
                 });
-                addLogEntry('Конфигурация сброшена');
-            }
+            });
             
             // Event listeners
             connectBtn.addEventListener('click', connect);
             disconnectBtn.addEventListener('click', disconnect);
-            micBtn.addEventListener('click', requestMicrophone);
-            desktopBtn.addEventListener('click', requestDesktop);
-            filesBtn.addEventListener('click', requestFileSystem);
-            uploadBtn.addEventListener('click', uploadFile);
-            connectUserBtn.addEventListener('click', connectToUser);
-            saveConfigBtn.addEventListener('click', saveConfig);
-            loadConfigBtn.addEventListener('click', loadConfig);
-            resetConfigBtn.addEventListener('click', resetConfig);
-            
-            scanBtn.addEventListener('click', function() {
-                addLogEntry('Сканирование сети...');
-                
-                // Simulate scanning
-                setTimeout(() => {
-                    addLogEntry('Сканирование завершено. Обнаружено 3 пользователя.');
-                }, 2000);
-            });
-            
-            // Add click handlers to config checkboxes
-            configCheckboxes.forEach(checkbox => {
-                checkbox.addEventListener('click', function() {
-                    toggleConfigCheckbox(this);
-                });
-            });
             
             // Initialize
-            addLogEntry('Инициализация системы...');
+            addLogEntry('Remote Access Tool v1.0.2 инициализирован');
+            addLogEntry('Готов к подключениям');
+            
+            // Simulate initial scan
+            setTimeout(() => {
+                addLogEntry('Сканирование сети: обнаружено 3 устройства');
+            }, 1000);
         });
     </script>
+    
+    <!-- Font Awesome for icons -->
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </body>
 </html>
